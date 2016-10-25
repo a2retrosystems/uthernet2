@@ -1,0 +1,10 @@
+*.o
+*.lib
+*.map
+*.bin
+*.sys
+*.dsk
+*.po
+
+*.obj
+*.exe
