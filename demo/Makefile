@@ -1,4 +1,4 @@
-all:    demo.dsk
+all: demo.dsk
 
 %.bin: %.s %_main.c
 	cl65 -o $@ -t apple2enh -m $(basename $@).map $^
