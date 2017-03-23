@@ -30,6 +30,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _STREAM_H_
 #define _STREAM_H_
 
+#ifndef __APPLE2ENH__
+#error W5100 auto-increment register access requires 65C02.
+#endif
+
 typedef unsigned char  byte;
 typedef unsigned short word;
 

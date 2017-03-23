@@ -43,8 +43,12 @@ static volatile byte* stream_addr_lo;
 
 static void set_addr(word addr)
 {
-  *stream_addr_hi = addr >> 8;
-  *stream_addr_lo = addr;
+  // The variables are necessary to have cc65 generate code
+  // suitable to access the W5100 auto-increment registers.
+  byte addr_hi = addr >> 8;
+  byte addr_lo = addr;
+  *stream_addr_hi = addr_hi;
+  *stream_addr_lo = addr_lo;
 }
 
 static byte get_byte(word addr)
