@@ -36,6 +36,7 @@ while True:
                 pass
             else:
                 sys.stdout.write('.')
+                sys.stdout.flush()
                 received = len(temp)
                 print >>sys.stderr, 'Recv Length:', received
                 assert temp == data[recv_pos:recv_pos+received]
