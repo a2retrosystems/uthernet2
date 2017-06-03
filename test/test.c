@@ -5,7 +5,12 @@
 
 #include <stdio.h>
 
+#ifdef __APPLE2ENH__
 #include "../demo/stream.h"
+#else
+#include "stream3.h"
+#endif
+
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
