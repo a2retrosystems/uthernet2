@@ -6,11 +6,15 @@ all: demo.dsk
 stream.bin: stream.c stream_main.c
 	cl65 -o $@ -t apple2enh -m $(basename $@).map $^
 
-demo.dsk: udp.bin tcp.bin stream.bin
+stream.irq.bin: stream.c stream_main.c
+	cl65 -o $@ -t apple2enh -m $(basename $@).map -D SOCKET_IRQ $^
+
+demo.dsk: udp.bin tcp.bin stream.bin stream.irq.bin
 	cp prodos.dsk $@
-	java -jar $(AC) -cc65 $@ udp    bin < udp.bin
-	java -jar $(AC) -cc65 $@ tcp    bin < tcp.bin
-	java -jar $(AC) -cc65 $@ stream bin < stream.bin
+	java -jar $(AC) -as $@ udp        bin < udp.bin
+	java -jar $(AC) -as $@ tcp        bin < tcp.bin
+	java -jar $(AC) -as $@ stream     bin < stream.bin
+	java -jar $(AC) -as $@ stream.irq bin < stream.irq.bin
 
 %.exe: %.c
 	cl /Fe:$@ $^

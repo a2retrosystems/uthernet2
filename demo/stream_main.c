@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <conio.h>
+#include <6502.h>
 
 #include "stream.h"
 
@@ -65,6 +66,9 @@ void main(void)
       {
         word i;
 
+#ifdef SOCKET_IRQ
+        SEI();
+#endif
         while (!(len = stream_send_request()))
         {
           printf("!");
@@ -75,12 +79,18 @@ void main(void)
           *stream_data = 500 - all + i;
         }
         stream_send_commit(len);
+#ifdef SOCKET_IRQ
+        CLI();
+#endif
         all -= len;
       }
       while (all);
       printf(".\n");
     }
 
+#ifdef SOCKET_IRQ
+    SEI();
+#endif
     len = stream_receive_request();
     if (len)
     {
@@ -98,8 +108,15 @@ void main(void)
       stream_receive_commit(len);
       printf(".\n");
     }
+#ifdef SOCKET_IRQ
+    CLI();
+#endif
 
+#ifdef SOCKET_IRQ
+    if (!stream_connected)
+#else
     if (!stream_connected())
+#endif
     {
       printf("Disconnect\n");
       return;

@@ -59,12 +59,22 @@ byte stream_init(word base_addr, byte *ip_addr,
 // Return <1> if the connection is established, return <0> otherwise.
 byte stream_connect(byte *server_addr, word server_port);
 
+// Disconnect from server.
+void stream_disconnect(void);
+
+#ifdef SOCKET_IRQ
+
+// Check if still connected to server.
+// <1> if the connection is established, <0> otherwise.
+extern volatile byte stream_connected;
+
+#else // SOCKET_IRQ
+
 // Check if still connected to server.
 // Return <1> if the connection is established, return <0> otherwise.
 byte stream_connected(void);
 
-// Disconnect from server.
-void stream_disconnect(void);
+#endif // SOCKET_IRQ
 
 // Request to receive data from the server.
 // Return maximum number of bytes to be received by reading from *stream_data.

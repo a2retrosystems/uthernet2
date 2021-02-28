@@ -32,6 +32,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma optimize      (on)
 #pragma static-locals (on)
 
+#include <6502.h>
+
 #include "stream.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -40,6 +42,11 @@ static volatile byte* stream_mode;
 static volatile byte* stream_addr_hi;
 static volatile byte* stream_addr_lo;
        volatile byte* stream_data;
+#ifdef SOCKET_IRQ
+       volatile byte  stream_connected;
+
+static byte irq_stack[0x100];
+#endif // SOCKET_IRQ
 
 static void set_addr(word addr)
 {
@@ -103,6 +110,31 @@ static void set_bytes(word addr, byte data[], word size)
   }
 }
 
+#ifdef SOCKET_IRQ
+static byte socket_irq(void)
+{
+  // Interrupt Register: S0_INT ?
+  if (get_byte(0x0015) & 0x01)
+  {
+    // Socket 0 Interrupt Register: Get interrupt bits
+    byte intr = get_byte(0x0402);
+
+    // DISCON interrupt bit ?
+    if (intr & 0x02)
+      stream_connected = 0;
+
+    // Socket 0 Interrupt Register: Clear interrupt bits
+    set_byte(0x0402, intr);
+
+    // Provide a bit feedback to the user
+    *(byte*)0xC030 = 0;
+
+    return IRQ_HANDLED;
+  }
+  return IRQ_NOT_HANDLED;
+}
+#endif // SOCKET_IRQ
+
 byte stream_init(word base_addr, byte *ip_addr,
                                  byte *submask,
                                  byte *gateway)
@@ -154,11 +186,22 @@ byte stream_init(word base_addr, byte *ip_addr,
   // Gateway IP Address Register
   set_bytes(0x0001, gateway, 4);
 
+#ifdef SOCKET_IRQ
+  set_irq(socket_irq, irq_stack, sizeof(irq_stack));
+
+  // Interrupt Mask Register: IM_IR0
+  set_byte(0x0016, 0x01);
+#endif // SOCKET_IRQ
+
   return 1;
 }
 
 byte stream_connect(byte *server_addr, word server_port)
 {
+#ifdef SOCKET_IRQ
+  SEI();
+#endif
+
   // Socket 0 Mode Register: TCP
   set_byte(0x0400, 0x01);
 
@@ -186,20 +229,29 @@ byte stream_connect(byte *server_addr, word server_port)
     // Socket 0 Status Register
     switch (get_byte(0x0403))
     {
-      case 0x00: return 0; // Socket Status: SOCK_CLOSED
-      case 0x17: return 1; // Socket Status: SOCK_ESTABLISHED
+      case 0x00:
+#ifdef SOCKET_IRQ
+        CLI();
+        stream_connected = 0;
+#endif
+        return 0; // Socket Status: SOCK_CLOSED
+
+      case 0x17:
+#ifdef SOCKET_IRQ
+        CLI();
+        stream_connected = 1;
+#endif
+        return 1; // Socket Status: SOCK_ESTABLISHED
     }
   }
 }
 
-byte stream_connected(void)
-{
-  // Socket 0 Status Register: SOCK_ESTABLISHED ?
-  return get_byte(0x0403) == 0x17;
-}
-
 void stream_disconnect(void)
 {
+#ifdef SOCKET_IRQ
+  SEI();
+#endif
+
   // Socket 0 Command Register: Command Pending ?
   while (get_byte(0x0401))
     ;
@@ -211,7 +263,20 @@ void stream_disconnect(void)
   while (get_byte(0x0403))
     // Wait for disconnect to allow for reconnect
     ;
+
+#ifdef SOCKET_IRQ
+  CLI();
+  stream_connected = 0;
+#endif
 }
+
+#ifndef SOCKET_IRQ
+byte stream_connected(void)
+{
+  // Socket 0 Status Register: SOCK_ESTABLISHED ?
+  return get_byte(0x0403) == 0x17;
+}
+#endif // !SOCKET_IRQ
 
 word stream_data_request(byte do_send)
 {
