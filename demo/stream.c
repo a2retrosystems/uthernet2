@@ -50,12 +50,8 @@ static byte irq_stack[0x100];
 
 static void set_addr(word addr)
 {
-  // The variables are necessary to have cc65 generate code
-  // suitable to access the W5100 auto-increment registers.
-  byte addr_hi = addr >> 8;
-  byte addr_lo = addr;
-  *stream_addr_hi = addr_hi;
-  *stream_addr_lo = addr_lo;
+  *w5100_addr_hi = addr >> 8;
+  *w5100_addr_lo = addr;
 }
 
 static byte get_byte(word addr)
@@ -76,27 +72,15 @@ static word get_word(word addr)
 {
   set_addr(addr);
 
-  {
-    // The variables are necessary to have cc65 generate code
-    // suitable to access the W5100 auto-increment registers.
-    byte data_hi = *stream_data;
-    byte data_lo = *stream_data;
-    return data_hi << 8 | data_lo;
-  }
+  return *w5100_data << 8 | *w5100_data;
 }
 
 static void set_word(word addr, word data)
 {
   set_addr(addr);
 
-  {
-    // The variables are necessary to have cc65 generate code
-    // suitable to access the W5100 auto-increment registers.
-    byte data_hi = data >> 8;
-    byte data_lo = data;
-    *stream_data = data_hi;
-    *stream_data = data_lo;
-  }
+  *w5100_data = data >> 8;
+  *w5100_data = data;
 }
 
 static void set_bytes(word addr, byte data[], word size)
