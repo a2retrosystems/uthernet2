@@ -20,4 +20,7 @@ demo.dsk: udp.bin tcp.bin stream.bin stream.irq.bin
 	cl /Fe:$@ $^
 
 clean:
-	-rm -f *.o *.map *.bin demo.dsk *.obj *.exe
+	-rm -f *.o *.map *.bin demo.dsk *.obj *.exe peer
+
+peer: peer.c
+	gcc -o $@ $^
