@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <conio.h>
+#include <ctype.h>
 
 unsigned char __fastcall__ tcp_init(void *parms);
 void                       tcp_done(void);
@@ -53,7 +54,7 @@ void main(void)
 
     if (kbhit())
     {
-      key = cgetc();
+      key = tolower(cgetc());
     }
     else
     {
