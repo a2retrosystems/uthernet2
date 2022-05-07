@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 
 #ifdef _MSC_VER
 
@@ -138,7 +139,7 @@ void main(void)
 
     if (kbhit())
     {
-      key = getch();
+      key = tolower(getch());
     }
     else
     {
@@ -149,7 +150,7 @@ void main(void)
     {
       if (remote.sin_addr.s_addr == INADDR_NONE)
       {
-        printf("Peer Unknown As Yet\n", len);
+        printf("Peer Unknown As Yet\n");
       }
       else
       {
@@ -173,7 +174,7 @@ void main(void)
     {
       if (tcp == INVALID_SOCKET)
       {
-        printf("No Connection\n", len);
+        printf("No Connection\n");
       }
       else
       {

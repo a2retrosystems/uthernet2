@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <conio.h>
+#include <ctype.h>
 #include <6502.h>
 
 #include "stream.h"
@@ -51,7 +52,7 @@ void main(void)
 
     if (kbhit())
     {
-      key = cgetc();
+      key = tolower(cgetc());
     }
     else
     {

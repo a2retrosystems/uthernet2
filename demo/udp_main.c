@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <conio.h>
+#include <ctype.h>
 
 void __fastcall__ udp_init(void *parms);
 
@@ -41,7 +42,7 @@ void main(void)
 
     if (kbhit())
     {
-      key = cgetc();
+      key = tolower(cgetc());
     }
     else
     {
